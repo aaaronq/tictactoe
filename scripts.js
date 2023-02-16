@@ -54,7 +54,10 @@ const displayController = (() => {
 	};
 
 	const resetBoard = () => {
-		fields.forEach((field) => (field.innerText = ""));
+		fields.forEach((field) => {
+			field.innerText = "";
+			field.classList.remove("combo");
+		});
 		gameBoard.resetBoard();
 		gameController.resetRounds();
 		gameController.isOver = false;
@@ -69,7 +72,10 @@ const displayController = (() => {
 			return message.innerText = `Player ${gameController.getCurrentPlayer()}'s turn`;
 		}
 		else {
-			return message.innerText = `Player ${gameController.checkWinner()} has won!`;
+			message.innerText = `Player ${gameController.checkWinner()} has won!`;
+			const combo = gameController.getWinningCombo();
+			combo.forEach((index) => fields[index].classList.add("combo"));
+			return;
 		}
 	}
 
@@ -84,6 +90,7 @@ const gameController = (() => {
 	let round = 1;
 	let isOver = false;
 	let winningPlayer = "";
+	let winningCombo = "";
 
 	const playRound = (field) => {
 		gameBoard.updateBoard(field, getCurrentPlayer());
@@ -110,12 +117,16 @@ const gameController = (() => {
 			gameController.isOver = true;
 			console.log(`Winner = ${gameState[winner[0][0]]}`);
 			winningPlayer = gameState[winner[0][0]];
+			console.log(`winning combo = ${winner[0]}`);
+			winningCombo = winner[0];
 			return winningPlayer;
 		}
 		else return false;
 	};
 
 	const getRound = () => round;
+
+	const getWinningCombo = () => winningCombo;
 
 	return {
 		playRound,
@@ -124,5 +135,6 @@ const gameController = (() => {
 		isOver,
 		getRound,
 		getCurrentPlayer,
+		getWinningCombo,
 	};
 })();
