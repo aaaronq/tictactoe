@@ -36,7 +36,10 @@ const displayController = (() => {
 
 	fields.forEach((field) => {
 		field.addEventListener("click", (e) => {
-			if (!gameBoard.getBoard()[e.target.getAttribute("data-index")] && gameController.isOver === false) {
+			if (
+				!gameBoard.getBoard()[e.target.getAttribute("data-index")] &&
+				gameController.isOver === false
+			) {
 				gameController.playRound(e.target.getAttribute("data-index"));
 				updateBoard();
 			}
@@ -54,10 +57,25 @@ const displayController = (() => {
 		fields.forEach((field) => (field.innerText = ""));
 		gameBoard.resetBoard();
 		gameController.resetRounds();
-        gameController.isOver = false;
+		gameController.isOver = false;
+		displayController.updateText();
 	};
 
+	const updateText = () => {
+		if (gameController.getRound() === 10 && gameController.checkWinner() === false) {
+			return message.innerText = "It's a tie!"
+		} 
+		if (gameController.checkWinner() === false) {
+			return message.innerText = `Player ${gameController.getCurrentPlayer()}'s turn`;
+		}
+		else {
+			return message.innerText = `Player ${gameController.checkWinner()} has won!`;
+		}
+	}
+
 	restartButton.addEventListener("click", resetBoard);
+
+	return { updateText };
 })();
 
 const gameController = (() => {
@@ -65,11 +83,13 @@ const gameController = (() => {
 	const player2 = Player("O");
 	let round = 1;
 	let isOver = false;
+	let winningPlayer = "";
 
 	const playRound = (field) => {
 		gameBoard.updateBoard(field, getCurrentPlayer());
 		checkWinner();
 		round++;
+		displayController.updateText();
 	};
 
 	const getCurrentPlayer = () => {
@@ -79,6 +99,7 @@ const gameController = (() => {
 	const resetRounds = () => (round = 1);
 
 	const checkWinner = () => {
+		if (gameController.isOver) return winningPlayer;
 		const gameState = gameBoard.getBoard();
 		const winner = gameBoard.winPatterns.filter((combination) => {
 			return combination.every((index) => {
@@ -86,10 +107,22 @@ const gameController = (() => {
 			});
 		});
 		if (winner[0]) {
-            gameController.isOver = true;
+			gameController.isOver = true;
 			console.log(`Winner = ${gameState[winner[0][0]]}`);
+			winningPlayer = gameState[winner[0][0]];
+			return winningPlayer;
 		}
+		else return false;
 	};
 
-	return { playRound, resetRounds, checkWinner, isOver };
+	const getRound = () => round;
+
+	return {
+		playRound,
+		resetRounds,
+		checkWinner,
+		isOver,
+		getRound,
+		getCurrentPlayer,
+	};
 })();
